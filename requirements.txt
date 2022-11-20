@@ -1,0 +1,10 @@
+Django
+gunicorn
+beautifulsoup4
+requests
+djangorestframework
+psycopg2-binary
+daphne
+dj_database_url
+python-dotenv
+whitenoise
