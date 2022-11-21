@@ -58,7 +58,10 @@ class GetFilesBaseClass(ABC):
             result = self.get_pdf_content()
         except Exception as e:
             return {"result": None, "log": self.fail_log(msg=str(e))}
+        appending_result_text = " but no result" if not result else ""
         return {
             "result": result,
-            "log": self.logger(success=True, msg=f"{self.cls_name} scraped"),
+            "log": self.logger(
+                success=True, msg=f"{self.cls_name} scraped{appending_result_text}"
+            ),
         }

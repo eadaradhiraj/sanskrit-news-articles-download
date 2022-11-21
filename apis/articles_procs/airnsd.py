@@ -1,5 +1,3 @@
-# from pdf2image import convert_from_bytes
-# import pytesseract
 from .get_files_base_class import GetFilesBaseClass
 
 
@@ -28,7 +26,7 @@ class AIRNSD(GetFilesBaseClass):
         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36",
     }
 
-    def get_pdf_content(self) -> str:
+    def get_pdf_content(self) -> bytes:
         res = ""
         file_time = self._download_hours.get(self.datetime_now.hour, None)
         if not file_time:

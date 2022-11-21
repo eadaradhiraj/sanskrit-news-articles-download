@@ -1,9 +1,39 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .articles_procs import airnsd
+from .articles_procs import airnsd, samprativartah
 from django.conf import settings
 from django.core.mail import EmailMessage
 from common.logging import logger
+
+
+def save_samprati_articles_common(source_name):
+    if source_name == "SampratiVartahLiterature":
+        samprativartah_obj = samprativartah.SampratiVartahLiterature()
+    elif source_name == "SampratiVartah":
+        samprativartah_obj = samprativartah.SampratiVartah()
+    samprativartah_article = samprativartah_obj.run()
+    logger.info(samprativartah_article.get("log"))
+    mail = EmailMessage(
+        subject=f"{source_name} @{samprativartah_obj.datetime_now}",
+        from_email=settings.EMAIL_HOST_USER,
+        to=["eadaradhiraj@gmail.com"],
+    )
+    results = samprativartah_article.get("result")
+    if results:
+        for res in results:
+            mail.body = res
+            mail.send()
+    return Response(samprativartah_article.get("log"))
+
+
+@api_view(["GET"])
+def save_samprati_lit_articles(request):
+    return save_samprati_articles_common("SampratiVartahLiterature")
+
+
+@api_view(["GET"])
+def save_samprati_news_articles(request):
+    return save_samprati_articles_common("SampratiVartah")
 
 
 @api_view(["GET"])
