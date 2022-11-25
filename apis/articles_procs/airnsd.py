@@ -12,7 +12,8 @@ class AIRNSD(GetFilesBaseClass):
 
     headers = {
         "authority": domain,
-        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "accept": "text/html,application/xhtml+xml,"
+        "application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
         "accept-language": "en-GB,en;q=0.8",
         "cache-control": "max-age=0",
         "origin": home_page,
@@ -23,17 +24,21 @@ class AIRNSD(GetFilesBaseClass):
         "sec-fetch-user": "?1",
         "sec-gpc": "1",
         "upgrade-insecure-requests": "1",
-        "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36",
+        "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/106.0.0.0 Safari/537.36",
     }
 
     def get_pdf_content(self) -> bytes:
-        res = ""
         file_time = self._download_hours.get(self.datetime_now.hour, None)
         if not file_time:
             raise Exception(f"{self.datetime_now.hour} not found")
         soup = self.get_soup(self.url)
 
-        target_text_pattern = f'\n\nSanskrit\n\n{file_time} \n\nDownload\n\n{self.datetime_now.strftime("%d %B")}\n\n'
+        target_text_pattern = (
+            f'\n\nSanskrit\n\n{file_time} \n\nDownload\n\n'
+            f'{self.datetime_now.strftime("%d %B")}\n\n'
+        )
         eventtarget_elem = soup.find(
             lambda tag: tag.name == "tr" and target_text_pattern in tag.text
         )
@@ -43,7 +48,9 @@ class AIRNSD(GetFilesBaseClass):
         data = {
             "__EVENTTARGET": EVENTTARGET,
             "__EVENTARGUMENT": "",
-            "__VIEWSTATE": soup.find("input", {"id": "__VIEWSTATE"}).get("value"),
+            "__VIEWSTATE": soup.find(
+                "input", {"id": "__VIEWSTATE"}
+            ).get("value"),
             "__VIEWSTATEGENERATOR": soup.find(
                 "input", {"id": "__VIEWSTATEGENERATOR"}
             ).get("value"),

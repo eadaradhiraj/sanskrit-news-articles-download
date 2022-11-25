@@ -6,7 +6,9 @@ from abc import ABC, abstractmethod
 
 class GetFilesBaseClass(ABC):
     HEADERS = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/39.0.2171.95 Safari/537.36"
     }
 
     @property
@@ -15,7 +17,9 @@ class GetFilesBaseClass(ABC):
 
     def log_requests_failure(self, status_code) -> dict:
         if status_code != 200:
-            return self.fail_log(msg=f"{url} retrieval failed with {req.status_code}")
+            return self.fail_log(
+                msg=f"{self.cls_name} retrieval failed with {status_code}"
+            )
 
     def get_html(self, url) -> bytes:
         req = requests.get(url, self.HEADERS)
@@ -62,6 +66,7 @@ class GetFilesBaseClass(ABC):
         return {
             "result": result,
             "log": self.logger(
-                success=True, msg=f"{self.cls_name} scraped{appending_result_text}"
+                success=True,
+                msg=f"{self.cls_name} scraped{appending_result_text}"
             ),
         }

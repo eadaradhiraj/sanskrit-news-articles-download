@@ -1,6 +1,6 @@
 from .get_files_base_class import GetFilesBaseClass
 from apis.models import NewsArticlePublishTime
-from django.utils.dateparse import parse_datetime, parse_date
+from django.utils.dateparse import parse_datetime
 from datetime import datetime
 
 
@@ -47,10 +47,12 @@ def get_pdf_content_common(_soup, source_name):
             NewsArticlePublishTime.objects.create(
                 source=source_name, timestamp=date_obj, log="Article(s) Found"
             )
-            return [
-                result_div.find("div", {"class": "entry-content"}).text.strip()
+            return {
+                get_proper_date(result_div, source_name): result_div.find(
+                    "div", {"class": "entry-content"}
+                ).text.strip()
                 for result_div in results_div
-            ]
+            }
 
 
 class SampratiVartahLiterature(GetFilesBaseClass):

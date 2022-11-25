@@ -13,7 +13,8 @@ logger = logging.getLogger()
 ch = logging.StreamHandler()
 ch.setFormatter(
     MyFormatter(
-        "[ %(levelname)s ] - %(message)s (%(class_name)s%(funcName)s() -> %(filename)s:%(lineno)s)"
+        "[ %(levelname)s ] - %(message)s (%(class_name)s%(funcName)s()"
+        " -> %(filename)s:%(lineno)s)"
     )
 )
 

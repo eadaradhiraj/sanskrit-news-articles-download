@@ -64,6 +64,7 @@ CSRF_TRUSTED_ORIGINS = [os.getenv("CSRF_TRUSTED_ORIGINS")]
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {"default": dj_database_url.config(default=os.getenv("DB_URL"))}
+# Use the below to test using sqlite and comment the above
 # DATABASES = {
 #     "default": {
 #         "ENGINE": "django.db.backends.sqlite3",
