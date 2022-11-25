@@ -28,11 +28,11 @@ def get_pdf_content_common(_soup, source_name):
 
         if NewsArticlePublishTime_obj:
             if date_obj > NewsArticlePublishTime_obj.timestamp:
-                articles = []
+                articles = {}
                 for result_div in results_div:
                     res_date_obj = get_proper_date(result_div, source_name)
                     if res_date_obj > NewsArticlePublishTime_obj.timestamp:
-                        articles.append(
+                        articles[res_date_obj] = (
                             result_div.find(
                                 "div", {"class": "entry-content"}
                             ).text.strip()
