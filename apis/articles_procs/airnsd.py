@@ -36,7 +36,7 @@ class AIRNSD(GetFilesBaseClass):
         soup = self.get_soup(self.url)
 
         target_text_pattern = (
-            f'\n\nSanskrit\n\n{file_time} \n\nDownload\n\n'
+            f"\n\nSanskrit\n\n{file_time} \n\nDownload\n\n"
             f'{self.datetime_now.strftime("%d %B")}\n\n'
         )
         eventtarget_elem = soup.find(
@@ -56,5 +56,13 @@ class AIRNSD(GetFilesBaseClass):
             ).get("value"),
             "__VIEWSTATEENCRYPTED": "",
         }
-        _resp = self.post_request(self.url, headers=self.headers, data=data)
-        return _resp
+        return [
+            {
+                "date": self.datetime_now,
+                "content": self.post_request(
+                    self.url,
+                    headers=self.headers,
+                    data=data
+                ),
+            }
+        ]

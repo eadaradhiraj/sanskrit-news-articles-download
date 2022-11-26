@@ -13,7 +13,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="NewsArticlePublishTime",
             fields=[
-                ("source", models.TextField(primary_key=True, serialize=False)),
+                (
+                    "source",
+                    models.TextField(primary_key=True, serialize=False)
+                ),
                 ("timestamp", models.DateTimeField()),
                 ("log", models.TextField(blank=True, null=True)),
             ],

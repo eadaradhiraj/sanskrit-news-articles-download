@@ -28,14 +28,17 @@ def get_pdf_content_common(_soup, source_name):
 
         if NewsArticlePublishTime_obj:
             if date_obj > NewsArticlePublishTime_obj.timestamp:
-                articles = {}
+                articles = []
                 for result_div in results_div:
                     res_date_obj = get_proper_date(result_div, source_name)
                     if res_date_obj > NewsArticlePublishTime_obj.timestamp:
-                        articles[res_date_obj] = (
-                            result_div.find(
-                                "div", {"class": "entry-content"}
-                            ).text.strip()
+                        articles.append(
+                            {
+                                "date": res_date_obj,
+                                "content": result_div.find(
+                                    "div", {"class": "entry-content"}
+                                ).text.strip(),
+                            }
                         )
                 NewsArticlePublishTime_obj.timestamp = date_obj
                 NewsArticlePublishTime_obj.save()
@@ -47,12 +50,16 @@ def get_pdf_content_common(_soup, source_name):
             NewsArticlePublishTime.objects.create(
                 source=source_name, timestamp=date_obj, log="Article(s) Found"
             )
-            return {
-                get_proper_date(result_div, source_name): result_div.find(
-                    "div", {"class": "entry-content"}
-                ).text.strip()
+            return [
+                {
+                    "date": get_proper_date(result_div, source_name),
+                    "content": result_div.find(
+                        "div", {"class": "entry-content"}
+                    ).text.strip(),
+                }
                 for result_div in results_div
-            }
+            ]
+    return []
 
 
 class SampratiVartahLiterature(GetFilesBaseClass):

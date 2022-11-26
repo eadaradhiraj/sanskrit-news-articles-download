@@ -9,3 +9,4 @@ dj_database_url
 python-dotenv
 whitenoise
 pytest-django
+freezegun

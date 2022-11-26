@@ -19,9 +19,9 @@ def save_samprati_articles_common(source_name):
     )
     results = samprativartah_article.get("result")
     if results:
-        for dt, cont in results.items():
-            mail.body = cont
-            mail.subject = f"{source_name} @{dt}"
+        for result in results:
+            mail.body = result.get("content")
+            mail.subject = f"{source_name} @{result.get('date')}"
             mail.send()
     return Response(samprativartah_article.get("log"))
 
@@ -47,7 +47,11 @@ def save_nsd_articles(_):
         to=["eadaradhiraj@gmail.com"],
     )
     if _nsd_article.get("result"):
-        mail.attach("news.pdf", _nsd_article.get("result"), "application/pdf")
+        mail.attach(
+            "news.pdf",
+            _nsd_article["result"][0].get("content"),
+            "application/pdf"
+        )
     else:
         mail.body = _nsd_article.get("log").get("msg")
     mail.send()
