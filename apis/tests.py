@@ -57,4 +57,6 @@ class TestApiModel:
                 news_time.save()
                 mailoutbox.clear()
                 response = client.get(source_url)
+                if i == 0:
+                    assert "no result" in response.data.get('msg')
                 assert len(mailoutbox) == i
