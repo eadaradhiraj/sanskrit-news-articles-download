@@ -1,4 +1,5 @@
 from .get_files_base_class import GetFilesBaseClass
+from datetime import timedelta
 
 
 class AIRNSD(GetFilesBaseClass):
@@ -29,21 +30,32 @@ class AIRNSD(GetFilesBaseClass):
         "Chrome/106.0.0.0 Safari/537.36",
     }
 
+    def get_eventtarget_elem(self, soup, file_time, curr_time):
+        day_in_string = f'{curr_time.day} {curr_time.strftime("%B")}'
+        target_text_pattern = (
+            f"\n\nSanskrit\n\n{file_time} \n\nDownload\n\n"
+            f'{day_in_string}\n\n'
+        )
+        eventtarget_elem = soup.find(
+            lambda tag: tag.name == "tr" and target_text_pattern in tag.text
+        )
+        return eventtarget_elem, target_text_pattern
+
     def get_pdf_content(self) -> bytes:
         file_time = self._download_hours.get(self.datetime_now.hour, None)
         if not file_time:
             raise Exception(f"{self.datetime_now.hour} not found")
         soup = self.get_soup(self.url)
-
-        target_text_pattern = (
-            f"\n\nSanskrit\n\n{file_time} \n\nDownload\n\n"
-            f'{self.datetime_now.strftime("%d %B")}\n\n'
-        )
-        eventtarget_elem = soup.find(
-            lambda tag: tag.name == "tr" and target_text_pattern in tag.text
+        curr_time = self.datetime_now
+        eventtarget_elem, target_text_pattern = self.get_eventtarget_elem(
+            soup, file_time, curr_time
         )
         if not eventtarget_elem:
-            raise Exception(f"{target_text_pattern} not found")
+            eventtarget_elem, target_text_pattern = self.get_eventtarget_elem(
+                soup, self._download_hours[20], curr_time - timedelta(days=1)
+            )
+            if not eventtarget_elem:
+                raise Exception(f"{target_text_pattern} not found")
         EVENTTARGET = eventtarget_elem.find("a")["id"].replace("_", "$")
         data = {
             "__EVENTTARGET": EVENTTARGET,
