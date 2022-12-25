@@ -17,4 +17,9 @@ urlpatterns = [
         views.save_samprati_lit_articles,
         name="routes",
     ),
+    path(
+        "save-sanskritvarta-articles",
+        views.save_sanskritvarta_articles,
+        name="routes",
+    ),
 ]

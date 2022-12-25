@@ -14,6 +14,22 @@ def get_proper_date(result_div, source_name):
     return date_obj
 
 
+def parse_rest_articles(results_div, source_name, NewsArticlePublishTime_obj):
+    articles = []
+    for result_div in results_div:
+        res_date_obj = get_proper_date(result_div, source_name)
+        if res_date_obj > NewsArticlePublishTime_obj.timestamp:
+            articles.append(
+                {
+                    "date": res_date_obj,
+                    "content": result_div.find(
+                        "div", {"class": "entry-content"}
+                    ).text.strip(),
+                }
+            )
+    return articles
+
+
 def get_pdf_content_common(_soup, source_name):
     post_class = {
         "SampratiVartah": "post-outer",
@@ -28,21 +44,12 @@ def get_pdf_content_common(_soup, source_name):
 
         if NewsArticlePublishTime_obj:
             if date_obj > NewsArticlePublishTime_obj.timestamp:
-                articles = []
-                for result_div in results_div:
-                    res_date_obj = get_proper_date(result_div, source_name)
-                    if res_date_obj > NewsArticlePublishTime_obj.timestamp:
-                        articles.append(
-                            {
-                                "date": res_date_obj,
-                                "content": result_div.find(
-                                    "div", {"class": "entry-content"}
-                                ).text.strip(),
-                            }
-                        )
                 NewsArticlePublishTime_obj.timestamp = date_obj
+                return_articles = parse_rest_articles(
+                    results_div, source_name, NewsArticlePublishTime_obj
+                )
                 NewsArticlePublishTime_obj.save()
-                return articles
+                return return_articles
             else:
                 NewsArticlePublishTime_obj.log = "No New Results Yet"
                 NewsArticlePublishTime_obj.save()

@@ -1,16 +1,26 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .articles_procs import airnsd, samprativartah
+from .articles_procs import (
+    airnsd,
+    samprativartah,
+    sanskritvarta
+)
 from django.conf import settings
 from django.core.mail import EmailMessage
 from common.logging import logger
 
 
+article_class_dict = {
+    "SampratiVartahLiterature": samprativartah.SampratiVartahLiterature(),
+    "SampratiVartah": samprativartah.SampratiVartah(),
+    "sanskritvarta": sanskritvarta.Sanskrit_Varta()
+}
+
+
 def save_samprati_articles_common(source_name):
-    if source_name == "SampratiVartahLiterature":
-        samprativartah_obj = samprativartah.SampratiVartahLiterature()
-    elif source_name == "SampratiVartah":
-        samprativartah_obj = samprativartah.SampratiVartah()
+    samprativartah_obj = article_class_dict.get(source_name)
+    if not samprativartah_obj:
+        return Response()
     samprativartah_article = samprativartah_obj.run()
     logger.info(samprativartah_article.get("log"))
     mail = EmailMessage(
@@ -34,6 +44,11 @@ def save_samprati_lit_articles(_):
 @api_view(["GET"])
 def save_samprati_news_articles(_):
     return save_samprati_articles_common("SampratiVartah")
+
+
+@api_view(["GET"])
+def save_sanskritvarta_articles(_):
+    return save_samprati_articles_common("sanskritvarta")
 
 
 @api_view(["GET"])
