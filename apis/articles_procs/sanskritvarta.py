@@ -31,43 +31,41 @@ class Sanskrit_Varta(GetFilesBaseClass):
             "postno": int(postno)
         }
 
-    def get_all_articles(self) -> list:
-        _soup = self.get_soup(self.url)
-        top_trending_posts = _soup.find(
-            'div', {'id': 'aft-main-banner-latest-trending-popular-recent'}
-        ).findAll("li")
-        return [
-            self.get_post_info(post) for post in top_trending_posts
-        ]
-
     def get_pdf_content(self) -> list:
         source_name = "sanskritvarta"
         NewsArticlePublishTime_obj = NewsArticlePublishTime.objects.filter(
             source=source_name
         ).first()
-        articles = self.get_all_articles()
+        _soup = self.get_soup(self.url)
+        top_trending_posts = _soup.find(
+            'div', {'id': 'aft-main-banner-latest-trending-popular-recent'}
+        ).findAll("li")
+
+        first_article = self.get_post_info(top_trending_posts[0])
         return_articles = []
-        postno = articles[0].get("postno")
+        postno = first_article.get("postno")
         if not NewsArticlePublishTime_obj:
+            rest_articles = [
+                self.get_post_info(post) for post in top_trending_posts[1:]
+            ]
             NewsArticlePublishTime.objects.create(
                 source=source_name,
-                timestamp=articles[0].get("date"),
+                timestamp=first_article.get("date"),
                 log="Article(s) Found",
                 postno=postno
             )
-            return articles
+            return [first_article] + rest_articles
         saved_postno = NewsArticlePublishTime_obj.postno
-        to_save_log = "Articles Found"
+        to_save_log = f"{source_name} scraped but no result"
         if postno > saved_postno:
-            return_articles.append(articles[0])
-            return_articles.extend(
-                [
-                    article for article in articles
-                    if article.get("postno") > saved_postno
-                ]
-            )
-            to_save_log = f"{source_name} scraped but no result"
-        NewsArticlePublishTime_obj.timestamp = articles[0].get("date")
+            to_save_log = "Article(s) Found"
+            return_articles.append(first_article)
+            for post in top_trending_posts[1:]:
+                post_info = self.get_post_info(post)
+                if post_info.get("postno") <= saved_postno:
+                    break
+                return_articles.append(post_info)
+        NewsArticlePublishTime_obj.timestamp = first_article.get("date")
         NewsArticlePublishTime_obj.log = to_save_log
         NewsArticlePublishTime.postno = postno
         NewsArticlePublishTime_obj.save()
