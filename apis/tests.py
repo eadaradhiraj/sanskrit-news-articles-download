@@ -37,35 +37,11 @@ class TestApiModel:
         assert len(mailoutbox) == 1
         assert "not found" in response.data.get("msg")
 
-    def test_sanskritvarta(self, client, mailoutbox):
-        source_name = "sanskritvarta"
-        source_endp = "save-sanskritvarta-articles"
-        source_url = f"/apis/{source_endp}"
-        response = client.get(source_url)
-        news_time = NewsArticlePublishTime.objects.filter(
-            source=source_name
-        ).first()
-        assert len(mailoutbox) > 0
-        assert hasattr(news_time, "timestamp")
-        assert hasattr(news_time, "postno")
-        assert response.status_code == 200
-        resp_dates = response.data.get("dates")
-        resp_postnos = response.data.get("postnos")
-        for i in range(0, 3):
-            news_time.timestamp = resp_dates[i]
-            news_time.postno = resp_postnos[i]
-            news_time.save()
-            mailoutbox.clear()
-            response = client.get(source_url)
-            if len(mailoutbox) == 0:
-                assert "no result" in response.data.get('msg')
-            else:
-                assert len(mailoutbox) > 0
-
-    def test_samprati_articles(self, client, mailoutbox):
+    def test_other_articles(self, client, mailoutbox):
         sources = {
             "SampratiVartah": "save-samprativartah-articles",
             "SampratiVartahLiterature": "save-samprativartah-lit-articles",
+            "sanskritvarta": "save-sanskritvarta-articles"
         }
         for source_name, source_endp in sources.items():
             source_url = f"/apis/{source_endp}"
@@ -77,8 +53,11 @@ class TestApiModel:
             assert hasattr(news_time, "timestamp")
             assert response.status_code == 200
             resp_dates = response.data.get("dates")
+            resp_postnos = response.data.get("postnos", [])
             for i in range(0, 3):
                 news_time.timestamp = resp_dates[i]
+                if resp_postnos:
+                    news_time.postno = resp_postnos[i]
                 news_time.save()
                 mailoutbox.clear()
                 response = client.get(source_url)
