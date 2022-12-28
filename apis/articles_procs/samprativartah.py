@@ -14,20 +14,27 @@ def get_proper_date(result_div, source_name):
     return date_obj
 
 
-def parse_rest_articles(results_div, source_name, NewsArticlePublishTime_obj):
-    articles = []
+def append_articles(res_date_obj, result_div):
+    return {
+        "date": res_date_obj,
+        "content": result_div.find(
+            "div", {"class": "entry-content"}
+        ).text.strip(),
+    }
+
+
+def get_rem_articles(results_div, saved_timestamp, source_name):
+    return_articles = []
     for result_div in results_div:
         res_date_obj = get_proper_date(result_div, source_name)
-        if res_date_obj > NewsArticlePublishTime_obj.timestamp:
-            articles.append(
-                {
-                    "date": res_date_obj,
-                    "content": result_div.find(
-                        "div", {"class": "entry-content"}
-                    ).text.strip(),
-                }
+        if res_date_obj > saved_timestamp:
+            return_articles.append(
+                append_articles(
+                    get_proper_date(result_div, source_name),
+                    result_div
+                )
             )
-    return articles
+    return return_articles
 
 
 def get_pdf_content_common(_soup, source_name):
@@ -44,10 +51,12 @@ def get_pdf_content_common(_soup, source_name):
 
         if NewsArticlePublishTime_obj:
             if date_obj > NewsArticlePublishTime_obj.timestamp:
-                NewsArticlePublishTime_obj.timestamp = date_obj
-                return_articles = parse_rest_articles(
-                    results_div, source_name, NewsArticlePublishTime_obj
+                return_articles = get_rem_articles(
+                    results_div,
+                    NewsArticlePublishTime_obj.timestamp,
+                    source_name
                 )
+                NewsArticlePublishTime_obj.timestamp = date_obj
                 NewsArticlePublishTime_obj.save()
                 return return_articles
             else:
