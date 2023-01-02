@@ -1,6 +1,9 @@
 from .get_files_base_class import GetFilesBaseClass
 from datetime import datetime
 from apis.models import NewsArticlePublishTime
+from django.utils import timezone
+from pytz import timezone as pytz_timezone
+localtz = pytz_timezone('Asia/Kolkata')
 
 
 class Sanskrit_Varta(GetFilesBaseClass):
@@ -20,15 +23,9 @@ class Sanskrit_Varta(GetFilesBaseClass):
                 )
             ]
         )
-        postno = [
-            cls.split("-")[1] for cls in post_soup.find(
-                "body"
-            ).get("class") if cls.startswith("postid")
-        ][0]
         return {
             "date": datetime.strptime(date_of_post, "%B %d, %Y"),
             "content": post_content,
-            "postno": int(postno)
         }
 
     def get_pdf_content(self) -> list:
@@ -43,7 +40,9 @@ class Sanskrit_Varta(GetFilesBaseClass):
 
         first_article = self.get_post_info(top_trending_posts[0])
         return_articles = []
-        postno = first_article.get("postno")
+        post_date = localtz.localize(
+            first_article.get("date")
+        )
         if not NewsArticlePublishTime_obj:
             rest_articles = [
                 self.get_post_info(post) for post in top_trending_posts[1:]
@@ -52,21 +51,19 @@ class Sanskrit_Varta(GetFilesBaseClass):
                 source=source_name,
                 timestamp=first_article.get("date"),
                 log="Article(s) Found",
-                postno=postno
             )
             return [first_article] + rest_articles
-        saved_postno = NewsArticlePublishTime_obj.postno
+        saved_date = timezone.localtime(NewsArticlePublishTime_obj.timestamp)
         to_save_log = f"{source_name} scraped but no result"
-        if postno > saved_postno:
+        if post_date > saved_date:
             to_save_log = "Article(s) Found"
             return_articles.append(first_article)
             for post in top_trending_posts[1:]:
                 post_info = self.get_post_info(post)
-                if post_info.get("postno") <= saved_postno:
+                if localtz.localize(post_info.get("date")) <= saved_date:
                     break
                 return_articles.append(post_info)
         NewsArticlePublishTime_obj.timestamp = first_article.get("date")
         NewsArticlePublishTime_obj.log = to_save_log
-        NewsArticlePublishTime.postno = postno
         NewsArticlePublishTime_obj.save()
         return return_articles

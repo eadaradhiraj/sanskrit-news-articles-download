@@ -46,14 +46,13 @@ class GetFilesBaseClass(ABC):
     def cls_name(self) -> str:
         return type(self).__name__
 
-    def logger(self, success, msg, dates=[], postnos=[]) -> dict:
+    def logger(self, success, msg, dates=[]) -> dict:
         return {
             "time": self.datetime_now,
             "classname": self.cls_name,
             "success": success,
             "msg": msg,
             "dates": dates,
-            "postnos": postnos
         }
 
     def fail_log(self, msg) -> dict:
@@ -70,8 +69,6 @@ class GetFilesBaseClass(ABC):
             "msg": f"{self.cls_name} scraped{appending_result_text}",
             "dates": [res.get("date") for res in result],
         }
-        if result and 'postno' in result[0].keys():
-            result_log["postnos"] = [res.get("postno") for res in result]
         return {
             "result": result,
             "log": self.logger(

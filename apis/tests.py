@@ -53,11 +53,8 @@ class TestApiModel:
             assert hasattr(news_time, "timestamp")
             assert response.status_code == 200
             resp_dates = response.data.get("dates")
-            resp_postnos = response.data.get("postnos", [])
             for i in range(0, 3):
                 news_time.timestamp = resp_dates[i]
-                if resp_postnos:
-                    news_time.postno = resp_postnos[i]
                 news_time.save()
                 mailoutbox.clear()
                 response = client.get(source_url)
