@@ -9,61 +9,58 @@ localtz = pytz_timezone('Asia/Kolkata')
 class Sanskrit_Varta(GetFilesBaseClass):
     url: str = "https://sanskritvarta.in/"
 
-    def get_post_info(self, post) -> dict:
-        post_soup = self.get_soup(post.find('a').get("href"))
-        date_of_post = post.find(
-            'span', {'class': 'posts-date'}
-        ).text.strip()
-        post_content = '\n'.join(
-            [
-                p.text.strip() for p in post_soup.findAll(
-                    "p", attrs={
-                        "style": "text-align: justify;"
-                    }
-                )
-            ]
-        )
-        return {
-            "date": datetime.strptime(date_of_post, "%B %d, %Y"),
-            "content": post_content,
-        }
-
     def get_pdf_content(self) -> list:
         source_name = "sanskritvarta"
         NewsArticlePublishTime_obj = NewsArticlePublishTime.objects.filter(
             source=source_name
         ).first()
         _soup = self.get_soup(self.url)
-        top_trending_posts = _soup.find(
-            'div', {'id': 'aft-main-banner-latest-trending-popular-recent'}
-        ).findAll("li")
+        all_posts = _soup.find(
+            "div", {
+                "class": [
+                    "aft-frontpage-feature-section-wrapper",
+                ]
+            }
+        ).findAll("div", {"class": "read-details"}) + _soup.find(
+            "div", {"class": "content-area"}
+        ).findAll("div", {"class": "read-details"})
+        art_links = [
+            {
+                "date": localtz.localize(
+                    datetime.strptime(
+                        post.find(
+                            "span", {"class": "posts-date"}
+                        ).text.strip(), "%B %d, %Y"
+                    )
+                    ),
+                "link": post.find(
+                    "div", {"class": "read-title"}
+                ).find("a").get("href")
+            } for post in all_posts
+        ]
 
-        first_article = self.get_post_info(top_trending_posts[0])
-        return_articles = []
-        post_date = localtz.localize(
-            first_article.get("date")
-        )
+        return_mail = "https://www.newzviewz.com/sanskrit/home"
+        post_date = art_links[0].get("date")
+
         if not NewsArticlePublishTime_obj:
-            rest_articles = [
-                self.get_post_info(post) for post in top_trending_posts[1:]
+            return_articles = [
+                post.get("link") for post in art_links
             ]
+            return_mail += "\n\n\n".join(return_articles)
             NewsArticlePublishTime.objects.create(
                 source=source_name,
-                timestamp=first_article.get("date"),
+                timestamp=post_date,
                 log="Article(s) Found",
             )
-            return [first_article] + rest_articles
+            return [{"content": return_mail, "date": post_date}]
         saved_date = timezone.localtime(NewsArticlePublishTime_obj.timestamp)
         to_save_log = f"{source_name} scraped but no result"
         if post_date > saved_date:
             to_save_log = "Article(s) Found"
-            return_articles.append(first_article)
-            for post in top_trending_posts[1:]:
-                post_info = self.get_post_info(post)
-                if localtz.localize(post_info.get("date")) <= saved_date:
-                    break
-                return_articles.append(post_info)
-        NewsArticlePublishTime_obj.timestamp = first_article.get("date")
+            for post in art_links:
+                if post.get("date") > saved_date:
+                    return_mail += "\n\n\n"+post.get("link")
+        NewsArticlePublishTime_obj.timestamp = post_date
         NewsArticlePublishTime_obj.log = to_save_log
         NewsArticlePublishTime_obj.save()
-        return return_articles
+        return [{"content": return_mail, "date": post_date}]

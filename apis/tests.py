@@ -37,11 +37,15 @@ class TestApiModel:
         assert len(mailoutbox) == 1
         assert "not found" in response.data.get("msg")
 
+    def test_nsd_articles_sanskritvarta(self, client, mailoutbox):
+        response = client.get("/apis/save-sanskritvarta-articles")
+        assert len(mailoutbox) == 1
+        assert "classname" in response.data.keys()
+
     def test_other_articles(self, client, mailoutbox):
         sources = {
             "SampratiVartah": "save-samprativartah-articles",
             "SampratiVartahLiterature": "save-samprativartah-lit-articles",
-            "sanskritvarta": "save-sanskritvarta-articles"
         }
         for source_name, source_endp in sources.items():
             source_url = f"/apis/{source_endp}"
