@@ -3,7 +3,7 @@ from datetime import timedelta
 
 
 class AIRNSD(GetFilesBaseClass):
-    _download_hours = {10: "0655-0700", 20: "1810-1815"}
+    _download_hours = {10: "0655-0700", 23: "1810-1815"}
     domain = "newsonair.gov.in"
     file_name = "nsd-text.aspx"
     protocol = "https://"
