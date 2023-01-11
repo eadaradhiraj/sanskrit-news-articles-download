@@ -5,12 +5,14 @@ from freezegun import freeze_time
 import datetime
 
 fake_timenow = timezone.localtime(timezone.now())
-if fake_timenow.hour < 10:
-    fake_timenow = fake_timenow.replace(hour=20, day=fake_timenow.day - 1)
-elif 11 <= fake_timenow.hour < 20:
-    fake_timenow = fake_timenow.replace(hour=10)
-elif fake_timenow.hour > 20:
-    fake_timenow = fake_timenow.replace(hour=20)
+morning_time = 10
+eve_time = 23
+if fake_timenow.hour < morning_time:
+    fake_timenow = fake_timenow.replace(hour=eve_time, day=fake_timenow.day - 1)
+elif 11 <= fake_timenow.hour < eve_time:
+    fake_timenow = fake_timenow.replace(hour=morning_time)
+elif fake_timenow.hour > eve_time:
+    fake_timenow = fake_timenow.replace(hour=eve_time)
 
 
 def test_nsd_articles(client, mailoutbox):
