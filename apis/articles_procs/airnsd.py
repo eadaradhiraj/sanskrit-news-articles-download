@@ -52,7 +52,7 @@ class AIRNSD(GetFilesBaseClass):
         )
         if not eventtarget_elem:
             eventtarget_elem, target_text_pattern = self.get_eventtarget_elem(
-                soup, self._download_hours[20], curr_time - timedelta(days=1)
+                soup, self._download_hours[23], curr_time - timedelta(days=1)
             )
             if not eventtarget_elem:
                 raise Exception(f"{target_text_pattern} not found")
